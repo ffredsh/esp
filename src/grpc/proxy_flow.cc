@@ -444,6 +444,8 @@ void ProxyFlow::StartDownstreamFinish(std::shared_ptr<ProxyFlow> flow,
   std::multimap<std::string, std::string> response_trailers;
 
   if (flow->status_from_esp_.ok()) {
+    ProcessUpstreamHeaders(flow->upstream_context_.GetServerInitialMetadata(),
+                           &response_trailers);
     ProcessUpstreamHeaders(flow->upstream_context_.GetServerTrailingMetadata(),
                            &response_trailers);
   }

@@ -216,7 +216,8 @@ ngx_int_t ngx_esp_error_body_filter(ngx_http_request_t *r, ngx_chain_t *in) {
           utils::Status::StatusProtoToJson(
               *ctx->grpc_status_details, &status_details_in_json,
               utils::JsonOptions::PRETTY_PRINT |
-                  utils::JsonOptions::OUTPUT_DEFAULTS);
+                  utils::JsonOptions::OUTPUT_DEFAULTS,
+              *ctx->transcoder_factory->GetTypeResolver());
           if (ngx_str_copy_from_std(r->pool, status_details_in_json,
                                     &json_error) != NGX_OK) {
             return NGX_ERROR;

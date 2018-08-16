@@ -20,6 +20,7 @@
 
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/stubs/status.h"
+#include "google/protobuf/util/type_resolver.h"
 #include "google/rpc/error_details.pb.h"
 #include "google/rpc/status.pb.h"
 
@@ -70,6 +71,12 @@ class Status final {
   // status and returns the error status in a JSON string.
   static void StatusProtoToJson(const ::google::rpc::Status& proto_status,
                                 std::string* result, int options);
+
+  // The overloaded function accepts an additional type resolver for marshaling
+  // the details field which contains protobuf.Any.
+  static void StatusProtoToJson(const ::google::rpc::Status& proto_status,
+                                std::string* result, int options,
+                                ::google::protobuf::util::TypeResolver& resolver);
 
   // Pre-defined OK status.
   static const Status& OK;
