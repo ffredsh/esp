@@ -25,12 +25,43 @@ using ::google::protobuf::Message;
 using ::google::protobuf::util::TypeResolver;
 using ::google::protobuf::util::error::Code;
 
+namespace pb = ::google::protobuf;
+
 namespace google {
 namespace api_manager {
 namespace utils {
 
 namespace {
 const char kTypeUrlPrefix[] = "type.googleapis.com";
+
+// Dual resolver accepts one or two resolvers. The first is the first
+// resolver used to attempt to resolve a type url. If that fails, it
+// will attempt to use the second resolver, if available.
+class DualResolver : public pb::util::TypeResolver {
+ public:
+  DualResolver(pb::util::TypeResolver *a, pb::util::TypeResolver *b) :
+    a(a), b(b) {}
+
+  virtual pb::util::Status ResolveMessageType(const std::string& type_url,
+                                            pb::Type* type) override {
+    auto status = a->ResolveMessageType(type_url, type);
+    if (b != nullptr && !status.ok()) {
+      return b->ResolveMessageType(type_url, type);
+    }
+    return status;
+  }
+
+  virtual pb::util::Status ResolveEnumType(const std::string& type_url,
+                                         pb::Enum* type) override {
+    auto status = a->ResolveEnumType(type_url, type);
+    if (b != nullptr && !status.ok()) {
+      return b->ResolveEnumType(type_url, type);
+    }
+    return status;
+  }
+ private:
+  pb::util::TypeResolver *a, *b;
+};
 
 // Creation function used by static lazy init.
 TypeResolver* CreateTypeResolver() {
@@ -51,7 +82,15 @@ std::string GetTypeUrl(const Message& message) {
 }
 
 Status ProtoToJson(const Message& message, std::string* result, int options) {
+  return ProtoToJson(message, result, options, *GetTypeResolver());
+}
+
+Status ProtoToJson(const Message& message,
+                   std::string* result, int options,
+                   ::google::protobuf::util::TypeResolver& resolver) {
+
   ::google::protobuf::util::JsonPrintOptions json_options;
+  DualResolver dualResolver(&resolver, GetTypeResolver());
   if (options & JsonOptions::PRETTY_PRINT) {
     json_options.add_whitespace = true;
   }
@@ -61,7 +100,7 @@ Status ProtoToJson(const Message& message, std::string* result, int options) {
   // TODO: Skip going to bytes and use ProtoObjectSource directly.
   ::google::protobuf::util::Status status =
       ::google::protobuf::util::BinaryToJsonString(
-          GetTypeResolver(), GetTypeUrl(message), message.SerializeAsString(),
+          &dualResolver, GetTypeUrl(message), message.SerializeAsString(),
           result, json_options);
   return Status::FromProto(status);
 }

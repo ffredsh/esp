@@ -136,6 +136,10 @@ TranscoderFactory::TranscoderFactory(
     : type_helper_(service.types(), service.enums()),
       json_print_options_(json_print_options) {}
 
+pbutil::TypeResolver* TranscoderFactory::GetTypeResolver() const {
+  return type_helper_.Resolver();
+}
+
 pbutil::Status TranscoderFactory::Create(
     const MethodCallInfo& call_info, pbio::ZeroCopyInputStream* request_input,
     TranscoderInputStream* response_input,

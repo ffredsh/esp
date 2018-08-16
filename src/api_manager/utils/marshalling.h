@@ -18,6 +18,7 @@
 #include <string>
 
 #include "google/protobuf/message.h"
+#include "google/protobuf/util/type_resolver.h"
 #include "include/api_manager/utils/status.h"
 
 namespace google {
@@ -45,6 +46,12 @@ std::string GetTypeUrl(const ::google::protobuf::Message& message);
 // TODO: Support generating to an output buffer.
 Status ProtoToJson(const ::google::protobuf::Message& message,
                    std::string* result, int options);
+
+// Converts a protobuf into a JSON string. This overloaded function accepts a
+// type resolver which will be used to marshall the proto.
+Status ProtoToJson(const ::google::protobuf::Message& message,
+                   std::string* result, int options,
+                   ::google::protobuf::util::TypeResolver& resolver);
 
 // Converts a protobuf into a JSON string and writes it into the output stream.
 // The options parameter is an OR'd set of the available JsonOptions.

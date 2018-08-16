@@ -66,6 +66,9 @@ class TranscoderFactory {
       const ::google::protobuf::util::JsonPrintOptions& json_print_options =
           ::google::protobuf::util::JsonPrintOptions());
 
+  // Returns the TypeResolver currently used by the Transcoders in the factory.
+  ::google::protobuf::util::TypeResolver* GetTypeResolver() const;
+
   // Creates a Transcoder object to transcode a single client request
   // call_info - contains all the necessary info for setting up transcoding
   // request_input - ZeroCopyInputStream that carries the JSON request coming
